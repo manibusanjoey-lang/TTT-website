@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TTT Admin — Owner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#8B1A1A;--red-b:#C0302A;--red-dim:rgba(139,26,26,.15);
+  --grey:#3a3a3a;--grey-l:#888;
+  --vio:#3B1A5A;--vio-b:#7B4FA8;--vio-dim:rgba(59,26,90,.2);
+  --dark:#080608;--mid:#0f0d13;--mid2:#16141c;--panel:#1a1820;
+  --border:rgba(255,255,255,.06);--border-h:rgba(255,255,255,.12);
+  --light:#D6D2CE;--muted:rgba(214,210,206,.45);
+  --green:#2A7A3B;--green-b:#3DB355;
+  --amber:#7A5500;--amber-b:#D4920A;
+  --fd:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--light);font-family:var(--fb);overflow-x:hidden;min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;z-index:9000;background:var(--dark);display:flex;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+#login-screen.gone{opacity:0;visibility:hidden;pointer-events:none}
+.login-box{width:100%;max-width:400px;padding:0 2rem}
+.login-logo{font-family:var(--fd);font-size:3.5rem;letter-spacing:.2em;margin-bottom:.3rem}
+.login-logo span:nth-child(1){color:var(--red-b)}
+.login-logo span:nth-child(2){color:var(--grey-l)}
+.login-logo span:nth-child(3){color:var(--vio-b)}
+.login-sub{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:2.8rem}
+.login-label{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;display:block}
+.login-input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.6rem;padding:.9rem 1.2rem;font-family:var(--fb);font-size:.95rem;color:var(--light);outline:none;margin-bottom:1rem;transition:border-color .3s}
+.login-input:focus{border-color:rgba(123,79,168,.5)}
+.login-input::placeholder{color:rgba(255,255,255,.18)}
+.login-btn{width:100%;background:var(--vio);color:var(--light);border:none;border-radius:.6rem;padding:1rem;font-family:var(--fb);font-size:.85rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;margin-top:.5rem}
+.login-btn:hover{background:var(--vio-b);box-shadow:0 8px 24px rgba(59,26,90,.5)}
+.login-err{color:var(--red-b);font-size:.8rem;margin-top:.8rem;display:none;letter-spacing:.05em}
+.login-hint{margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center;line-height:1.6}
+/* login bg orbs */
+.login-orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none}
+.lb1{width:500px;height:500px;background:var(--red);opacity:.05;top:-100px;left:-100px}
+.lb2{width:400px;height:400px;background:var(--vio);opacity:.07;bottom:-80px;right:-80px}
+
+/* ── ADMIN SHELL ── */
+#admin{display:none;min-height:100vh}
+#admin.show{display:flex}
+
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;background:var(--mid);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sb-logo{padding:1.6rem 1.4rem;border-bottom:1px solid var(--border)}
+.sb-logo-text{font-family:var(--fd);font-size:1.9rem;letter-spacing:.18em}
+.sb-logo-text span:nth-child(1){color:var(--red-b)}
+.sb-logo-text span:nth-child(2){color:var(--grey-l)}
+.sb-logo-text span:nth-child(3){color:var(--vio-b)}
+.sb-tag{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+.sb-nav{flex:1;padding:1.2rem 0;overflow-y:auto}
+.sb-section{font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.2);padding:.6rem 1.4rem;margin-top:.8rem}
+.sb-link{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.4rem;font-size:.82rem;color:var(--muted);text-decoration:none;cursor:pointer;transition:all .2s;border-left:2px solid transparent;user-select:none}
+.sb-link:hover{color:var(--light);background:rgba(255,255,255,.03)}
+.sb-link.active{color:var(--light);background:rgba(123,79,168,.1);border-left-color:var(--vio-b)}
+.sb-link.active .sb-ico{opacity:1}
+.sb-ico{font-size:1rem;opacity:.5;transition:opacity .2s}
+.sb-link:hover .sb-ico{opacity:.9}
+.sb-bottom{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:.7rem}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--vio-dim);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sb-uname{font-size:.8rem;font-weight:600}
+.sb-urole{font-size:.65rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.logout-btn{margin-top:.8rem;width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.5rem;padding:.55rem;font-family:var(--fb);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .3s}
+.logout-btn:hover{border-color:var(--red-b);color:var(--red-b)}
+
+/* MAIN CONTENT */
+.main{flex:1;margin-left:240px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:58px;background:var(--mid);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-title{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.tb-badge{padding:.3rem .8rem;border-radius:100px;font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.badge-live{background:rgba(42,122,59,.2);color:var(--green-b);border:1px solid rgba(61,179,85,.2)}
+.badge-admin{background:var(--vio-dim);color:var(--vio-b);border:1px solid rgba(123,79,168,.25)}
+.tb-time{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.content{flex:1;padding:2rem;overflow-y:auto}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block;animation:pgIn .4s ease}
+@keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.pg-header{margin-bottom:2rem}
+.pg-label{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.pg-title{font-family:var(--fd);font-size:clamp(2rem,4vw,3rem);line-height:.95}
+
+/* GRID LAYOUTS */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+.grid-1{display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1.5rem}
+
+/* STAT CARD */
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:1.4rem;transition:border-color .3s,transform .3s;cursor:default}
+.kpi:hover{border-color:var(--border-h);transform:translateY(-2px)}
+.kpi-label{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.kpi-value{font-family:var(--fd);font-size:2.4rem;line-height:1;margin-bottom:.4rem}
+.kpi-sub{font-size:.72rem;color:var(--muted)}
+.kpi-trend{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:600;padding:.18rem .55rem;border-radius:100px}
+.trend-up{background:rgba(42,122,59,.15);color:var(--green-b)}
+.trend-dn{background:rgba(139,26,26,.15);color:var(--red-b)}
+.trend-flat{background:rgba(80,80,80,.15);color:var(--grey-l)}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:1.5rem;margin-bottom:1.2rem}
+.panel-title{font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between}
+.panel-title span{color:var(--light);font-size:.68rem}
+
+/* CHART BAR */
+.chart-bars{display:flex;align-items:flex-end;gap:.5rem;height:100px}
+.cbar{flex:1;border-radius:.3rem .3rem 0 0;min-height:4px;transition:height .8s cubic-bezier(.16,1,.3,1);position:relative;cursor:default}
+.cbar:hover::after{content:attr(data-val);position:absolute;top:-1.4rem;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--light);white-space:nowrap}
+.cbar-label{text-align:center;font-size:.6rem;color:var(--muted);margin-top:.4rem}
+.chart-wrap{overflow:hidden}
+.chart-x{display:flex;gap:.5rem;margin-top:.3rem}
+.chart-x span{flex:1;text-align:center;font-size:.58rem;color:var(--muted)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.tbl th{text-align:left;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding:.6rem .8rem;border-bottom:1px solid var(--border);font-weight:500}
+.tbl td{padding:.75rem .8rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.pill-status{padding:.22rem .65rem;border-radius:100px;font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.ps-live{background:rgba(42,122,59,.15);color:var(--green-b)}
+.ps-draft{background:rgba(212,146,10,.12);color:var(--amber-b)}
+.ps-off{background:rgba(139,26,26,.12);color:var(--red-b)}
+
+/* TOGGLE */
+.toggle-wrap{display:flex;align-items:center;gap:.8rem}
+.toggle{width:40px;height:22px;background:rgba(255,255,255,.08);border-radius:100px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
+.toggle.on{background:var(--vio)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--light);transition:transform .3s}
+.toggle.on::after{transform:translateX(18px)}
+.toggle-label{font-size:.82rem;color:var(--light)}
+.toggle-sub{font-size:.7rem;color:var(--muted)}
+
+/* EDITOR FIELDS */
+.field-group{margin-bottom:1.2rem}
+.field-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;display:block}
+.field-input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.55rem;padding:.75rem 1rem;font-family:var(--fb);font-size:.88rem;color:var(--light);outline:none;transition:border-color .3s}
+.field-input:focus{border-color:rgba(123,79,168,.5)}
+.field-textarea{min-height:90px;resize:vertical;line-height:1.6}
+.field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
+.btn-save{background:var(--vio);color:var(--light);border:none;border-radius:.55rem;padding:.7rem 1.6rem;font-family:var(--fb);font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s}
+.btn-save:hover{background:var(--vio-b);box-shadow:0 6px 20px rgba(59,26,90,.45)}
+.btn-danger{background:var(--red-dim);color:var(--red-b);border:1px solid rgba(192,48,42,.25);border-radius:.55rem;padding:.7rem 1.6rem;font-family:var(--fb);font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s}
+.btn-danger:hover{background:var(--red);color:var(--light)}
+.btn-row{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1rem}
+.saved-toast{display:none;font-size:.75rem;color:var(--green-b);letter-spacing:.1em;align-items:center;gap:.4rem}
+.saved-toast.show{display:flex}
+
+/* COLOR PICKER ROW */
+.color-row{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.color-swatch{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.color-swatch input[type=color]{width:44px;height:44px;border-radius:.4rem;border:1px solid var(--border);background:none;cursor:pointer;padding:2px}
+.color-swatch label{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ACTIVITY FEED */
+.activity-item{display:flex;gap:.9rem;align-items:flex-start;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;margin-top:.3rem;flex-shrink:0}
+.act-text{font-size:.82rem;line-height:1.5}
+.act-time{font-size:.68rem;color:var(--muted);margin-top:.15rem}
+
+/* PROGRESS ROW */
+.prog-row{margin-bottom:1rem}
+.prog-top{display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.35rem}
+.prog-sub{color:var(--muted)}
+.prog-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.prog-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+
+/* NOTIFICATION */
+.notif{background:var(--panel);border:1px solid var(--border);border-radius:.7rem;padding:1rem 1.2rem;display:flex;gap:.9rem;align-items:center;margin-bottom:.8rem;transition:border-color .2s}
+.notif:hover{border-color:var(--border-h)}
+.notif-ico{font-size:1.2rem;flex-shrink:0}
+.notif-text{flex:1;font-size:.82rem;line-height:1.5}
+.notif-time{font-size:.68rem;color:var(--muted);white-space:nowrap}
+.notif.unread{border-left:2px solid var(--vio-b)}
+
+@keyframes dotBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .grid-4,.grid-3,.grid-2{grid-template-columns:1fr}
+}
+
+/* ── DARK / LIGHT MODE ── */
+body.light-mode{
+  --dark:#F4F2EF;--mid:#E8E5E0;--mid2:#DEDBD6;--panel:#FFFFFF;
+  --border:rgba(0,0,0,.08);--border-h:rgba(0,0,0,.16);
+  --light:#1a1820;--muted:rgba(26,24,32,.5);
+  background:#F4F2EF;color:#1a1820;
+}
+body.light-mode nav,.light-mode .sidebar{background:#fff;border-color:rgba(0,0,0,.08)}
+body.light-mode .kpi,.light-mode .panel,.light-mode .wcard,.light-mode .notif{background:#fff;border-color:rgba(0,0,0,.08)}
+body.light-mode .tbl td,.light-mode .tbl th{color:#1a1820}
+body.light-mode .login-input,.light-mode .field-input{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.1);color:#1a1820}
+
+/* ── THEME TOGGLE BUTTON ── */
+#theme-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;padding:.4rem .9rem;font-family:var(--fb);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(214,210,206,.5);cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:.45rem}
+#theme-btn:hover{background:rgba(255,255,255,.1);color:var(--light)}
+
+/* ── NOTIFICATION BELL ── */
+#notif-btn{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;transition:all .3s}
+#notif-btn:hover{background:rgba(255,255,255,.1)}
+.notif-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red-b);font-size:.55rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:2px solid var(--dark)}
+#notif-panel{position:fixed;top:58px;right:1rem;width:320px;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:200;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .25s;max-height:400px;overflow-y:auto}
+#notif-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
+.notif-head{padding:1rem 1.2rem;border-bottom:1px solid var(--border);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.notif-clear{font-size:.68rem;cursor:pointer;color:var(--vio-b)}
+.notif-item{padding:.85rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.03);display:flex;gap:.75rem;align-items:flex-start;transition:background .2s}
+.notif-item:hover{background:rgba(255,255,255,.03)}
+.notif-item.unread::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--vio-b);flex-shrink:0;margin-top:.35rem}
+.ni-text{font-size:.8rem;line-height:1.5;flex:1}
+.ni-time{font-size:.65rem;color:var(--muted);white-space:nowrap}
+
+/* ── SESSION TIMEOUT ── */
+#session-warn{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);z-index:9000;background:var(--panel);border:1px solid rgba(212,146,10,.3);border-radius:.9rem;padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:transform .4s;min-width:320px}
+#session-warn.show{transform:translateX(-50%) translateY(0)}
+.sw-text{flex:1;font-size:.82rem;color:var(--amber-b)}
+.sw-btn{background:var(--amber-b);color:var(--dark);border:none;border-radius:.45rem;padding:.45rem 1rem;font-family:var(--fb);font-size:.72rem;font-weight:600;cursor:pointer;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── SEARCH BAR ── */
+#admin-search{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:.5rem;padding:.42rem 1rem;font-family:var(--fb);font-size:.78rem;color:var(--light);outline:none;width:180px;transition:all .3s}
+#admin-search:focus{border-color:rgba(123,79,168,.4);width:220px}
+#admin-search::placeholder{color:rgba(255,255,255,.22)}
+
+/* ── AUDIT LOG ── */
+.audit-row{display:flex;gap:.8rem;align-items:flex-start;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.78rem}
+.audit-time{font-size:.65rem;color:var(--muted);white-space:nowrap;min-width:85px}
+.audit-action{flex:1;opacity:.8}
+.audit-who{font-size:.65rem;color:var(--muted)}
+
+/* ── CHART.JS WRAPPER ── */
+.chart-container{position:relative;height:180px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #admin-search{display:none}
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN ORB BG -->
+<div class="login-orb lb1"></div>
+<div class="login-orb lb2"></div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><span>T</span><span>T</span><span>T</span></div>
+    <p class="login-sub">Owner Admin Access</p>
+    <label class="login-label">Username</label>
+    <input class="login-input" id="l-user" type="text" placeholder="admin" autocomplete="username"/>
+    <label class="login-label">Password</label>
+    <input class="login-input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="login-btn" id="l-btn">Access Dashboard →</button>
+    <p class="login-err" id="l-err">⚠ Incorrect credentials. Try again.</p>
+    <p class="login-hint">Demo credentials:<br><strong style="color:var(--light)">admin</strong> / <strong style="color:var(--light)">ttt2025</strong></p>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel">
+  <div class="notif-head">Notifications <span class="notif-clear" onclick="clearNotifs()">Clear all</span></div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- SESSION WARNING -->
+<div id="session-warn">
+  <div class="sw-text">⏱ Your session will expire in <strong id="sw-countdown">2:00</strong></div>
+  <button class="sw-btn" onclick="extendSession()">Stay Logged In</button>
+</div>
+
+<!-- ── ADMIN SHELL ── -->
+<div id="admin">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text"><span>T</span><span>T</span><span>T</span></div>
+      <p class="sb-tag">Owner Dashboard</p>
+    </div>
+    <nav class="sb-nav">
+      <p class="sb-section">Overview</p>
+      <div class="sb-link active" data-page="overview"><span class="sb-ico">📊</span> Overview</div>
+      <div class="sb-link" data-page="analytics"><span class="sb-ico">📈</span> Analytics</div>
+      <div class="sb-link" data-page="activity"><span class="sb-ico">⚡</span> Live Activity</div>
+      <p class="sb-section">Content</p>
+      <div class="sb-link" data-page="pillars"><span class="sb-ico">🏛</span> Pillars</div>
+      <div class="sb-link" data-page="clothing"><span class="sb-ico">👕</span> Clothing <span style="font-size:.58rem;color:var(--red-b);margin-left:.3rem;letter-spacing:.1em">SOON</span></div>
+      <div class="sb-link" data-page="quotes"><span class="sb-ico">💬</span> Quotes</div>
+      <div class="sb-link" data-page="stories"><span class="sb-ico">🧑‍🤝‍🧑</span> Stories Wall</div>
+      <div class="sb-link" data-page="founder"><span class="sb-ico">👑</span> Founder Profile</div>
+      <p class="sb-section">Site</p>
+      <div class="sb-link" data-page="appearance"><span class="sb-ico">🎨</span> Appearance</div>
+      <div class="sb-link" data-page="newsletter"><span class="sb-ico">✉️</span> Newsletter</div>
+      <div class="sb-link" data-page="settings"><span class="sb-ico">⚙️</span> Settings</div>
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="sb-avatar">👑</div>
+        <div><div class="sb-uname">TTT Owner</div><div class="sb-urole">Administrator</div></div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Overview</span>
+      <div class="topbar-right">
+        <input id="admin-search" placeholder="🔍  Search…" oninput="adminSearch(this.value)"/>
+        <span class="tb-badge badge-live">● Site Live</span>
+        <span class="tb-badge badge-admin">Owner</span>
+        <span class="tb-time" id="tb-clock">--:--:--</span>
+        <div id="notif-btn" onclick="toggleNotif()">🔔<span class="notif-badge" id="notif-count">4</span></div>
+        <button id="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── PAGE: OVERVIEW ── -->
+      <div class="page active" id="page-overview">
+        <div class="pg-header">
+          <p class="pg-label">Good to see you</p>
+          <h1 class="pg-title">Welcome Back, <span style="color:var(--vio-b)">Owner</span></h1>
+        </div>
+
+        <div class="grid-4">
+          <div class="kpi">
+            <div class="kpi-label"><span>👥</span> Total Visitors</div>
+            <div class="kpi-value" style="color:var(--vio-b)" id="kpi-visitors">0</div>
+            <div class="kpi-sub"><span class="kpi-trend trend-up">↑ 12%</span> vs last week</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><span>✉️</span> Subscribers</div>
+            <div class="kpi-value" style="color:var(--green-b)" id="kpi-subs">0</div>
+            <div class="kpi-sub"><span class="kpi-trend trend-up">↑ 8%</span> new signups</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><span>⏱</span> Avg. Time on Site</div>
+            <div class="kpi-value" style="color:var(--amber-b)">4:32</div>
+            <div class="kpi-sub"><span class="kpi-trend trend-up">↑ 22s</span> vs baseline</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><span>🎯</span> Quiz Completions</div>
+            <div class="kpi-value" style="color:var(--red-b)" id="kpi-quiz">0</div>
+            <div class="kpi-sub"><span class="kpi-trend trend-flat">→ stable</span> this week</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Weekly Traffic <span>Last 7 days</span></div>
+            <div class="chart-wrap">
+              <div class="chart-bars" id="traffic-chart"></div>
+              <div class="chart-x" id="traffic-x"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Pillar Engagement <span>% of sessions</span></div>
+            <div class="prog-row" style="margin-top:.5rem">
+              <div class="prog-top"><span>🔴 Train</span><span class="prog-sub">42%</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:0;background:var(--red-b)" data-w="42"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-top"><span>⚫ Travel</span><span class="prog-sub">35%</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:0;background:#888" data-w="35"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-top"><span>🟣 Transform</span><span class="prog-sub">23%</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:0;background:var(--vio-b)" data-w="23"></div></div>
+            </div>
+            <div style="margin-top:1.5rem">
+              <div class="panel-title">Quiz Results Distribution <span>All time</span></div>
+              <div class="prog-row">
+                <div class="prog-top"><span>🔥 Trainer</span><span class="prog-sub">38%</span></div>
+                <div class="prog-track"><div class="prog-fill" style="width:0;background:var(--red-b)" data-w="38"></div></div>
+              </div>
+              <div class="prog-row">
+                <div class="prog-top"><span>🌍 Explorer</span><span class="prog-sub">41%</span></div>
+                <div class="prog-track"><div class="prog-fill" style="width:0;background:#888" data-w="41"></div></div>
+              </div>
+              <div class="prog-row">
+                <div class="prog-top"><span>✨ Transformer</span><span class="prog-sub">21%</span></div>
+                <div class="prog-track"><div class="prog-fill" style="width:0;background:var(--vio-b)" data-w="21"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Recent Activity <span>Live feed</span></div>
+          <div id="activity-feed-mini"></div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: ANALYTICS ── -->
+      <div class="page" id="page-analytics">
+        <div class="pg-header">
+          <p class="pg-label">Data & Insights</p>
+          <h1 class="pg-title">Site <span style="color:var(--vio-b)">Analytics</span></h1>
+        </div>
+        <div class="grid-3">
+          <div class="kpi"><div class="kpi-label"><span>📄</span> Page Views</div><div class="kpi-value" style="color:var(--vio-b)">24,810</div><div class="kpi-sub"><span class="kpi-trend trend-up">↑ 18%</span> this month</div></div>
+          <div class="kpi"><div class="kpi-label"><span>🔁</span> Return Rate</div><div class="kpi-value" style="color:var(--green-b)">34%</div><div class="kpi-sub"><span class="kpi-trend trend-up">↑ 5%</span> improving</div></div>
+          <div class="kpi"><div class="kpi-label"><span>📉</span> Bounce Rate</div><div class="kpi-value" style="color:var(--amber-b)">41%</div><div class="kpi-sub"><span class="kpi-trend trend-dn">↑ 3%</span> needs attention</div></div>
+        </div>
+        <div class="panel" style="margin-bottom:1.2rem">
+          <div class="panel-title">Monthly Traffic Trend <span>Chart.js</span></div>
+          <div class="chart-container"><canvas id="traffic-line-chart"></canvas></div>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Top Traffic Sources</div>
+            <table class="tbl">
+              <thead><tr><th>Source</th><th>Sessions</th><th>%</th></tr></thead>
+              <tbody>
+                <tr><td>🔍 Organic Search</td><td>3,240</td><td><span class="pill-status ps-live">42%</span></td></tr>
+                <tr><td>📱 Social Media</td><td>2,110</td><td><span class="pill-status ps-draft">27%</span></td></tr>
+                <tr><td>🔗 Direct</td><td>1,560</td><td><span class="pill-status ps-draft">20%</span></td></tr>
+                <tr><td>📧 Email</td><td>620</td><td>8%</td></tr>
+                <tr><td>🌐 Referral</td><td>240</td><td>3%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Top Pages</div>
+            <table class="tbl">
+              <thead><tr><th>Page</th><th>Views</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>🏠 Home / Hero</td><td>8,420</td><td><span class="pill-status ps-live">Live</span></td></tr>
+                <tr><td>🏋️ Train Section</td><td>5,310</td><td><span class="pill-status ps-live">Live</span></td></tr>
+                <tr><td>🎯 Quiz</td><td>4,890</td><td><span class="pill-status ps-live">Live</span></td></tr>
+                <tr><td>🌍 Travel Section</td><td>3,740</td><td><span class="pill-status ps-live">Live</span></td></tr>
+                <tr><td>🧠 Transform</td><td>2,450</td><td><span class="pill-status ps-live">Live</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Device Breakdown</div>
+          <div class="grid-3" style="margin-bottom:0">
+            <div><div class="prog-top"><span>📱 Mobile</span><span class="prog-sub">58%</span></div><div class="prog-track"><div class="prog-fill" style="width:0;background:var(--vio-b)" data-w="58"></div></div></div>
+            <div><div class="prog-top"><span>💻 Desktop</span><span class="prog-sub">34%</span></div><div class="prog-track"><div class="prog-fill" style="width:0;background:var(--grey-l)" data-w="34"></div></div></div>
+            <div><div class="prog-top"><span>📟 Tablet</span><span class="prog-sub">8%</span></div><div class="prog-track"><div class="prog-fill" style="width:0;background:var(--red-b)" data-w="8"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: LIVE ACTIVITY ── -->
+      <div class="page" id="page-activity">
+        <div class="pg-header">
+          <p class="pg-label">Real-time</p>
+          <h1 class="pg-title">Live <span style="color:var(--green-b)">Activity</span></h1>
+        </div>
+        <div class="grid-3">
+          <div class="kpi"><div class="kpi-label"><span>🟢</span> Active Right Now</div><div class="kpi-value" style="color:var(--green-b)" id="live-now">0</div><div class="kpi-sub">visitors on site</div></div>
+          <div class="kpi"><div class="kpi-label"><span>📋</span> Events Today</div><div class="kpi-value" style="color:var(--vio-b)" id="live-events">0</div><div class="kpi-sub">interactions logged</div></div>
+          <div class="kpi"><div class="kpi-label"><span>✉️</span> New Signups Today</div><div class="kpi-value" style="color:var(--amber-b)" id="live-signups">0</div><div class="kpi-sub">newsletter joins</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Live Event Stream <span id="live-status" style="color:var(--green-b)">● streaming</span></div>
+          <div id="live-feed" style="max-height:420px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: PILLARS ── -->
+      <div class="page" id="page-pillars">
+        <div class="pg-header">
+          <p class="pg-label">Content Management</p>
+          <h1 class="pg-title">Manage <span style="color:var(--red-b)">Pillars</span></h1>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Pillar Visibility</div>
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="toggle-wrap"><div class="toggle on" id="tog-train"></div><div><div class="toggle-label">🔴 Train Pillar</div><div class="toggle-sub">Fitness, strength & nutrition content</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on" id="tog-travel"></div><div><div class="toggle-label">⚫ Travel Pillar</div><div class="toggle-sub">Destinations, culture & wellness travel</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on" id="tog-transform"></div><div><div class="toggle-label">🟣 Transform Pillar</div><div class="toggle-sub">Mindset, journaling & daily rituals</div></div></div>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="panel">
+            <div class="panel-title">Train Pillar</div>
+            <div class="field-group"><label class="field-label">Headline</label><input class="field-input" value="Build. Burn. Become."/></div>
+            <div class="field-group"><label class="field-label">Description</label><textarea class="field-input field-textarea">Your body is your most powerful machine. Push it, fuel it, rest it with intention.</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save Changes</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Travel Pillar</div>
+            <div class="field-group"><label class="field-label">Headline</label><input class="field-input" value="Go Far. Go Deep."/></div>
+            <div class="field-group"><label class="field-label">Description</label><textarea class="field-input field-textarea">New horizons break old patterns. Every passport stamp is a new version of you.</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save Changes</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Transform Pillar</div>
+            <div class="field-group"><label class="field-label">Headline</label><input class="field-input" value="Rewire. Rise. Repeat."/></div>
+            <div class="field-group"><label class="field-label">Description</label><textarea class="field-input field-textarea">The most profound journey is inward. Build the architecture of who you want to become.</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save Changes</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: CLOTHING ── -->
+      <div class="page" id="page-clothing">
+        <div class="pg-header">
+          <p class="pg-label">Coming Soon</p>
+          <h1 class="pg-title">TTT <span style="color:var(--red-b)">Clothing</span></h1>
+        </div>
+
+        <!-- Status Banner -->
+        <div style="background:rgba(192,48,42,.08);border:1px solid rgba(192,48,42,.2);border-radius:.9rem;padding:1.4rem 1.8rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--red-b);animation:dotBlink 1.4s ease-in-out infinite;flex-shrink:0"></div>
+          <div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--red-b);letter-spacing:.05em">Collection Status: Pending Launch</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">The TTT clothing line is in development. Use this panel to manage products, set a launch date, and track early interest signups.</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="kpi"><div class="kpi-label"><span>✉️</span> Early Interest List</div><div class="kpi-value" style="color:var(--red-b)" id="cloth-kpi-subs">0</div><div class="kpi-sub">notify-me signups</div></div>
+          <div class="kpi"><div class="kpi-label"><span>👕</span> Products Drafted</div><div class="kpi-value" style="color:var(--amber-b)">3</div><div class="kpi-sub">tee, hoodie, cap</div></div>
+          <div class="kpi"><div class="kpi-label"><span>📅</span> Est. Launch</div><div class="kpi-value" style="color:var(--grey-l);font-size:1.8rem">TBD</div><div class="kpi-sub">set a date below</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Launch Settings</div>
+            <div class="field-group"><label class="field-label">Section Status</label>
+              <select class="field-input field-select" id="cloth-status">
+                <option selected>Pending — Coming Soon</option>
+                <option>Early Access — Waitlist Only</option>
+                <option>Live — Shop Open</option>
+                <option>Hidden — Not Visible</option>
+              </select>
+            </div>
+            <div class="field-group"><label class="field-label">Target Launch Date</label><input class="field-input" type="date" id="cloth-date"/></div>
+            <div class="field-group"><label class="field-label">Teaser Headline</label><input class="field-input" value="TTT Clothing"/></div>
+            <div class="field-group"><label class="field-label">Teaser Description</label><textarea class="field-input field-textarea">The brand you carry inside deserves to be worn on the outside. TTT apparel is being crafted for those who train hard, travel far, and think deeper.</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save Settings</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">Product Drafts <span>3 items</span></div>
+            <table class="tbl">
+              <thead><tr><th>Product</th><th>Category</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>👕 TTT Oversized Tee</td><td>Core Drop</td><td><span class="pill-status ps-draft">Draft</span></td></tr>
+                <tr><td>🧥 TTT Performance Hoodie</td><td>Core Drop</td><td><span class="pill-status ps-draft">Draft</span></td></tr>
+                <tr><td>🧢 TTT Signature Cap</td><td>Accessories</td><td><span class="pill-status ps-draft">Draft</span></td></tr>
+              </tbody>
+            </table>
+            <div class="btn-row" style="margin-top:1.2rem"><button class="btn-save" onclick="showSaved(this)">+ Add Product Draft</button><span class="saved-toast">✓ Added</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Early Interest Signups <span id="cloth-list-count">0 signups</span></div>
+          <table class="tbl">
+            <thead><tr><th>Email</th><th>Signed Up</th><th>Source</th></tr></thead>
+            <tbody id="cloth-subs-body">
+              <tr><td colspan="3" style="text-align:center;opacity:.3;padding:2rem;font-size:.82rem">No signups yet — the "Notify Me" form on the site will populate this list.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PAGE: QUOTES ── -->
+      <div class="page" id="page-quotes">
+        <div class="pg-header">
+          <p class="pg-label">Content Management</p>
+          <h1 class="pg-title">Motivation <span style="color:var(--vio-b)">Quotes</span></h1>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Add New Quote</div>
+          <div class="grid-2">
+            <div class="field-group"><label class="field-label">Quote Text</label><textarea class="field-input field-textarea" id="new-quote" placeholder="Enter your motivational quote here..."></textarea></div>
+            <div>
+              <div class="field-group"><label class="field-label">Author / Source</label><input class="field-input" id="new-author" placeholder="— TTT Train"/></div>
+              <div class="field-group"><label class="field-label">Pillar</label><select class="field-input field-select" id="new-pillar"><option>Train</option><option>Travel</option><option>Transform</option></select></div>
+              <button class="btn-save" onclick="addQuote()">Add Quote →</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Active Quotes <span id="quote-count">8 quotes</span></div>
+          <table class="tbl" id="quotes-table">
+            <thead><tr><th>Quote</th><th>Pillar</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="quotes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PAGE: STORIES ── -->
+      <div class="page" id="page-stories">
+        <div class="pg-header">
+          <p class="pg-label">Community</p>
+          <h1 class="pg-title">Transformation <span style="color:var(--vio-b)">Stories</span></h1>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Add New Story</div>
+          <div class="grid-2">
+            <div>
+              <div class="field-group"><label class="field-label">Name</label><input class="field-input" id="s-name" placeholder="Marcus T."/></div>
+              <div class="field-group"><label class="field-label">Tag Line</label><input class="field-input" id="s-tag" placeholder="Train Pillar · 6 months"/></div>
+              <div class="field-group"><label class="field-label">Pillar</label><select class="field-input field-select" id="s-pillar"><option>Train</option><option>Travel</option><option>Transform</option></select></div>
+            </div>
+            <div>
+              <div class="field-group"><label class="field-label">Story</label><textarea class="field-input field-textarea" id="s-text" placeholder="Their transformation story..."></textarea></div>
+              <div class="field-group"><label class="field-label">Result Badge</label><input class="field-input" id="s-result" placeholder="↑ 22kg Strength Gain"/></div>
+              <button class="btn-save" onclick="addStory()">Add Story →</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Published Stories <span id="story-count">6 stories</span></div>
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Pillar</th><th>Result</th><th>Status</th></tr></thead>
+            <tbody id="stories-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PAGE: APPEARANCE ── -->
+      <div class="page" id="page-appearance">
+        <div class="pg-header">
+          <p class="pg-label">Branding & Design</p>
+          <h1 class="pg-title">Site <span style="color:var(--vio-b)">Appearance</span></h1>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Brand Colors</div>
+            <div class="color-row">
+              <div class="color-swatch"><input type="color" value="#C0302A"/><label>Train (Red)</label></div>
+              <div class="color-swatch"><input type="color" value="#888888"/><label>Travel (Grey)</label></div>
+              <div class="color-swatch"><input type="color" value="#7B4FA8"/><label>Transform (Violet)</label></div>
+              <div class="color-swatch"><input type="color" value="#080608"/><label>Background</label></div>
+            </div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Apply Colors</button><span class="saved-toast">✓ Applied</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Hero Settings</div>
+            <div class="field-group"><label class="field-label">Hero Tagline</label><input class="field-input" value="A movement for the bold & the restless"/></div>
+            <div class="field-group"><label class="field-label">Hero Sub-headline</label><textarea class="field-input field-textarea" style="min-height:60px">Three pillars. One relentless pursuit of your fullest life.</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Feature Toggles</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="toggle-wrap"><div class="toggle on"></div><div><div class="toggle-label">Ambient Sound Button</div><div class="toggle-sub">Show sound toggle in nav</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on"></div><div><div class="toggle-label">Custom Cursor</div><div class="toggle-sub">Custom ring cursor effect</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on"></div><div><div class="toggle-label">Quiz Section</div><div class="toggle-sub">Show "Which Pillar" quiz</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on"></div><div><div class="toggle-label">Quote Ticker</div><div class="toggle-sub">Scrolling motivation banner</div></div></div>
+            <div class="toggle-wrap"><div class="toggle on"></div><div><div class="toggle-label">Transformation Wall</div><div class="toggle-sub">Community stories section</div></div></div>
+            <div class="toggle-wrap"><div class="toggle"></div><div><div class="toggle-label">Maintenance Mode</div><div class="toggle-sub">Redirect visitors to holding page</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: NEWSLETTER ── -->
+      <div class="page" id="page-newsletter">
+        <div class="pg-header">
+          <p class="pg-label">Email Marketing</p>
+          <h1 class="pg-title">Newsletter <span style="color:var(--green-b)">Hub</span></h1>
+        </div>
+        <div class="grid-3">
+          <div class="kpi"><div class="kpi-label"><span>✉️</span> Total Subscribers</div><div class="kpi-value" style="color:var(--green-b)" id="nl-total">0</div><div class="kpi-sub">all time</div></div>
+          <div class="kpi"><div class="kpi-label"><span>📬</span> Open Rate</div><div class="kpi-value" style="color:var(--amber-b)">38%</div><div class="kpi-sub"><span class="kpi-trend trend-up">↑ 4%</span> above avg</div></div>
+          <div class="kpi"><div class="kpi-label"><span>🔗</span> Click Rate</div><div class="kpi-value" style="color:var(--vio-b)">12%</div><div class="kpi-sub"><span class="kpi-trend trend-up">↑ 2%</span> this month</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Compose Broadcast</div>
+          <div class="field-group"><label class="field-label">Subject Line</label><input class="field-input" placeholder="This week's TTT dispatch…"/></div>
+          <div class="field-group"><label class="field-label">Preview Text</label><input class="field-input" placeholder="A short preview shown in inbox…"/></div>
+          <div class="field-group"><label class="field-label">Body</label><textarea class="field-input field-textarea" style="min-height:140px" placeholder="Write your weekly TTT message here…"></textarea></div>
+          <div class="btn-row">
+            <button class="btn-save" onclick="showSaved(this)">Schedule Send →</button>
+            <button class="btn-danger">Save as Draft</button>
+            <span class="saved-toast">✓ Scheduled</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Recent Subscribers <span>Last 10</span></div>
+          <table class="tbl" id="subs-table">
+            <thead><tr><th>Email</th><th>Joined</th><th>Source</th></tr></thead>
+            <tbody id="subs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- ── PAGE: FOUNDER ── -->
+      <div class="page" id="page-founder">
+        <div class="pg-header">
+          <p class="pg-label">Your Profile</p>
+          <h1 class="pg-title">Founder <span style="color:var(--vio-b)">Profile</span></h1>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Personal Info</div>
+            <div class="field-group"><label class="field-label">Full Name</label><input class="field-input" value="Joey Manibusan"/></div>
+            <div class="field-group"><label class="field-label">Title / Tagline</label><input class="field-input" value="Army Veteran · Cybersecurity Expert · Entrepreneur · Explorer"/></div>
+            <div class="field-group"><label class="field-label">Personal Quote</label><textarea class="field-input field-textarea">"The most dangerous person in the room is the one who never stops growing — who trains their body like a weapon, travels the world like a student, and transforms their mind like it's the only battlefield that truly matters."</textarea></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this);logAudit('Founder personal info updated')">Save Changes</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Photo</div>
+            <div style="background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.1);border-radius:.9rem;padding:3rem;text-align:center;margin-bottom:1rem">
+              <div style="font-size:3rem;margin-bottom:.8rem">📸</div>
+              <p style="font-size:.82rem;color:var(--muted);line-height:1.6">Upload your profile photo here.<br>Replaces the animated avatar on the site.</p>
+              <button class="btn-save" style="margin-top:1rem" onclick="showSaved(this)">Upload Photo</button>
+            </div>
+            <div class="field-group"><label class="field-label">Photo Alt Text</label><input class="field-input" value="Joey Manibusan — Founder of TTT"/></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Social Links</div>
+            <div class="field-group"><label class="field-label">Instagram (Personal)</label><input class="field-input" value="https://instagram.com/ttt.joey"/></div>
+            <div class="field-group"><label class="field-label">Instagram (Brand)</label><input class="field-input" value="https://instagram.com/ttt.culture"/></div>
+            <div class="field-group"><label class="field-label">TikTok</label><input class="field-input" placeholder="https://tiktok.com/@..."/></div>
+            <div class="field-group"><label class="field-label">YouTube</label><input class="field-input" placeholder="https://youtube.com/@..."/></div>
+            <div class="field-group"><label class="field-label">LinkedIn</label><input class="field-input" placeholder="https://linkedin.com/in/..."/></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this);logAudit('Founder social links updated')">Save Links</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">📖 Book Details</div>
+            <div class="field-group"><label class="field-label">Book Title</label><input class="field-input" value="Where Structure Ends, Growth Begins"/></div>
+            <div class="field-group"><label class="field-label">Book Description</label><textarea class="field-input field-textarea">A raw, unfiltered guide to breaking free from the frameworks that cage your potential — and stepping into the version of yourself that was always waiting on the other side of comfort.</textarea></div>
+            <div class="field-group"><label class="field-label">Buy Link (Amazon / Site)</label><input class="field-input" placeholder="https://..."/></div>
+            <div class="field-group"><label class="field-label">Show Book Card on Site</label>
+              <div class="toggle-wrap" style="margin-top:.3rem"><div class="toggle on" onclick="this.classList.toggle('on')"></div><div><div class="toggle-label">Book section visible</div></div></div>
+            </div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this);logAudit('Book details updated')">Save Book Info</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Badges &amp; Stats</div>
+            <div class="field-group"><label class="field-label">Stat 1 — Number</label><input class="field-input" value="20+"/></div>
+            <div class="field-group"><label class="field-label">Stat 1 — Label</label><input class="field-input" value="Countries Explored"/></div>
+            <div class="field-group"><label class="field-label">Stat 2 — Number</label><input class="field-input" value="4+"/></div>
+            <div class="field-group"><label class="field-label">Stat 2 — Label</label><input class="field-input" value="Years Living Abroad"/></div>
+            <div class="field-group"><label class="field-label">Stat 3 — Number</label><input class="field-input" value="1"/></div>
+            <div class="field-group"><label class="field-label">Stat 3 — Label</label><input class="field-input" value="Brand. Built Daily."/></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this);logAudit('Founder stats updated')">Save Stats</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Full Story</div>
+          <div class="field-group"><label class="field-label">Your Story (shown on site)</label>
+            <textarea class="field-input field-textarea" style="min-height:180px">TTT wasn't born in a boardroom — it was born on the road, in the gym, and inside the mind of someone who refused to sit still. As a U.S. Army Veteran, I had the rare privilege of seeing the world while serving — living in South Korea for a year and Germany for three years, experiencing cultures most people only read about. Those years didn't just build discipline. They built perspective.</textarea>
+          </div>
+          <div class="field-group"><label class="field-label">Mission Statement</label>
+            <textarea class="field-input field-textarea" style="min-height:80px">To connect people who share an obsession with growth — in fitness, in exploration, and in the mind. TTT isn't a brand you follow. It's a standard you live by.</textarea>
+          </div>
+          <div class="btn-row"><button class="btn-save" onclick="showSaved(this);logAudit('Founder story updated')">Save Story</button><span class="saved-toast">✓ Saved</span></div>
+        </div>
+      </div>
+
+      <!-- ── PAGE: SETTINGS ── -->
+      <div class="page" id="page-settings">
+        <div class="pg-header">
+          <p class="pg-label">System</p>
+          <h1 class="pg-title">Admin <span style="color:var(--vio-b)">Settings</span></h1>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-title">Change Password</div>
+            <div class="field-group"><label class="field-label">Current Password</label><input class="field-input" type="password" placeholder="••••••••"/></div>
+            <div class="field-group"><label class="field-label">New Password</label><input class="field-input" type="password" placeholder="••••••••"/></div>
+            <div class="field-group"><label class="field-label">Confirm New Password</label><input class="field-input" type="password" placeholder="••••••••"/></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Update Password</button><span class="saved-toast">✓ Updated</span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Site Metadata</div>
+            <div class="field-group"><label class="field-label">Site Title</label><input class="field-input" value="TTT — Train. Travel. Transform."/></div>
+            <div class="field-group"><label class="field-label">Meta Description</label><textarea class="field-input field-textarea" style="min-height:70px">Three pillars. One relentless pursuit of your fullest life.</textarea></div>
+            <div class="field-group"><label class="field-label">Contact Email</label><input class="field-input" type="email" placeholder="owner@ttt.com"/></div>
+            <div class="btn-row"><button class="btn-save" onclick="showSaved(this)">Save Metadata</button><span class="saved-toast">✓ Saved</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Danger Zone</div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+            <button class="btn-danger" onclick="exportCSV()">⬇ Export Subscribers (.csv)</button>
+            <button class="btn-danger" onclick="exportQuizCSV()">⬇ Export Quiz Results (.csv)</button>
+            <button class="btn-danger" onclick="if(confirm('Clear all analytics data?'))showSaved(this)">Clear Analytics Data</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Audit Log <span>Last 20 actions</span></div>
+          <div id="audit-log"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /admin -->
+
+<script>
+/* ── LOGIN ── */
+document.getElementById('l-btn').addEventListener('click', doLogin);
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const err=document.getElementById('l-err');
+  if(u==='admin'&&p==='ttt2025'){
+    document.getElementById('login-screen').classList.add('gone');
+    document.getElementById('admin').classList.add('show');
+    initDashboard();
+  } else {
+    err.style.display='block';
+    document.getElementById('l-pass').value='';
+    document.getElementById('l-pass').focus();
+    setTimeout(()=>err.style.display='none',3500);
+  }
+}
+document.getElementById('logout-btn').addEventListener('click',()=>{
+  document.getElementById('admin').classList.remove('show');
+  document.getElementById('login-screen').classList.remove('gone');
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-user').value='';
+  clearTimeout(sessionTimer);clearTimeout(warnTimer);
+  logAudit('Owner logged out');
+});
+
+/* ── NAVIGATION ── */
+document.querySelectorAll('.sb-link').forEach(link=>{
+  link.addEventListener('click',()=>{
+    document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    link.classList.add('active');
+    const pg=document.getElementById('page-'+link.dataset.page);
+    if(pg){pg.classList.add('active');animateProg(pg);}
+    document.getElementById('topbar-title').textContent=link.textContent.trim();
+  });
+});
+
+/* ── TOGGLES ── */
+document.querySelectorAll('.toggle').forEach(t=>{
+  t.addEventListener('click',()=>t.classList.toggle('on'));
+});
+
+/* ── CLOCK ── */
+function updateClock(){
+  const n=new Date();
+  document.getElementById('tb-clock').textContent=
+    n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock,1000);updateClock();
+
+/* ── ANIMATE PROGRESS BARS ── */
+function animateProg(container){
+  setTimeout(()=>{
+    (container||document).querySelectorAll('.prog-fill[data-w]').forEach(b=>{
+      b.style.width=b.dataset.w+'%';
+    });
+  },200);
+}
+
+/* ── SAVED TOAST ── */
+function showSaved(btn){
+  const toast=btn.nextElementSibling;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+/* ── COUNTER ANIMATION ── */
+function countUp(el,target,suffix=''){
+  let c=0;const step=Math.ceil(target/60);
+  const iv=setInterval(()=>{c=Math.min(c+step,target);el.textContent=c.toLocaleString()+suffix;if(c>=target)clearInterval(iv)},20);
+}
+
+/* ── DASHBOARD INIT ── */
+function initDashboard(){
+  // KPIs
+  setTimeout(()=>{
+    countUp(document.getElementById('kpi-visitors'),12480);
+    countUp(document.getElementById('kpi-subs'),843);
+    countUp(document.getElementById('kpi-quiz'),3210);
+    countUp(document.getElementById('nl-total'),843);
+    countUp(document.getElementById('live-now'),Math.floor(Math.random()*18)+4);
+    countUp(document.getElementById('live-events'),Math.floor(Math.random()*400)+120);
+    countUp(document.getElementById('live-signups'),Math.floor(Math.random()*12)+3);
+    countUp(document.getElementById('cloth-kpi-subs'),47);
+    document.getElementById('cloth-list-count').textContent='47 signups';
+  },300);
+
+  // Progress bars on overview
+  animateProg(document.getElementById('page-overview'));
+
+  // Traffic chart
+  buildTrafficChart();
+
+  // Activity feed
+  buildActivityFeed();
+
+  // Tables
+  buildQuotesTable();
+  buildStoriesTable();
+  buildSubsTable();
+
+  // Live feed
+  startLiveFeed();
+
+  // New features
+  renderNotifs();
+  renderAuditLog();
+  buildLineChart();
+  resetSession();
+  logAudit('Admin dashboard loaded');
+}
+
+/* ── TRAFFIC CHART ── */
+function buildTrafficChart(){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals=[420,680,590,740,820,960,710];
+  const max=Math.max(...vals);
+  const chart=document.getElementById('traffic-chart');
+  const xAxis=document.getElementById('traffic-x');
+  const colors=['var(--red-b)','var(--vio-b)','var(--grey-l)'];
+  chart.innerHTML='';xAxis.innerHTML='';
+  days.forEach((d,i)=>{
+    const h=Math.round((vals[i]/max)*90);
+    const b=document.createElement('div');
+    b.className='cbar';b.dataset.val=vals[i].toLocaleString()+' visits';
+    b.style.cssText=`height:0;background:${colors[i%3]};opacity:.7`;
+    chart.appendChild(b);
+    setTimeout(()=>b.style.height=h+'px',300+i*80);
+    const x=document.createElement('span');x.textContent=d;xAxis.appendChild(x);
+  });
+}
+
+/* ── ACTIVITY FEED ── */
+const actEvents=[
+  {dot:'var(--green-b)',text:'New subscriber joined — welcome@gmail.com',time:'2 min ago'},
+  {dot:'var(--vio-b)',text:'Quiz completed — result: The Transformer',time:'5 min ago'},
+  {dot:'var(--red-b)',text:'Train section viewed — 3 min avg session',time:'8 min ago'},
+  {dot:'var(--grey-l)',text:'Travel section viewed — Tokyo card clicked',time:'11 min ago'},
+  {dot:'var(--amber-b)',text:'Newsletter opened — subject: "Week 12 dispatch"',time:'14 min ago'},
+  {dot:'var(--green-b)',text:'New subscriber — j.okafor@proton.me',time:'19 min ago'},
+  {dot:'var(--vio-b)',text:'Quiz completed — result: The Explorer',time:'22 min ago'},
+  {dot:'var(--red-b)',text:'Train section — HIIT card expanded',time:'26 min ago'},
+];
+function buildActivityFeed(){
+  const feed=document.getElementById('activity-feed-mini');
+  feed.innerHTML=actEvents.slice(0,5).map(e=>`
+    <div class="activity-item">
+      <div class="act-dot" style="background:${e.dot}"></div>
+      <div><div class="act-text">${e.text}</div><div class="act-time">${e.time}</div></div>
+    </div>`).join('');
+}
+
+/* ── LIVE FEED ── */
+const livePool=[
+  {c:'var(--green-b)',t:'📥 New subscriber: alex.r@gmail.com'},
+  {c:'var(--vio-b)',t:'🎯 Quiz result: The Trainer (Train pillar)'},
+  {c:'var(--grey-l)',t:'👁 Travel section entered — 18s on page'},
+  {c:'var(--red-b)',t:'🏋️ Train card clicked: Power Lifting Fundamentals'},
+  {c:'var(--vio-b)',t:'✨ Quiz result: The Transformer'},
+  {c:'var(--amber-b)',t:'⏱ Session > 5 min — high engagement'},
+  {c:'var(--green-b)',t:'📥 New subscriber: mia.t@outlook.com'},
+  {c:'var(--grey-l)',t:'🌍 Globe animation interacted with'},
+  {c:'var(--red-b)',t:'💬 Quote ticker paused — reading quote #4'},
+  {c:'var(--vio-b)',t:'🧠 Transform section — Atomic Mornings card'},
+];
+let liveCount=0;
+function startLiveFeed(){
+  const feed=document.getElementById('live-feed');
+  function addEvent(){
+    const e=livePool[Math.floor(Math.random()*livePool.length)];
+    const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const row=document.createElement('div');
+    row.className='activity-item';row.style.opacity='0';row.style.transition='opacity .4s';
+    row.innerHTML=`<div class="act-dot" style="background:${e.c}"></div><div><div class="act-text">${e.t}</div><div class="act-time">${now}</div></div>`;
+    feed.insertBefore(row,feed.firstChild);
+    setTimeout(()=>row.style.opacity='1',50);
+    liveCount++;
+    const le=document.getElementById('live-events');
+    if(le)le.textContent=(parseInt(le.textContent||0)+1).toLocaleString();
+    // keep max 20 items
+    while(feed.children.length>20)feed.removeChild(feed.lastChild);
+  }
+  addEvent();
+  setInterval(addEvent,Math.random()*3000+2000);
+  setInterval(()=>{
+    const ln=document.getElementById('live-now');
+    if(ln)ln.textContent=Math.floor(Math.random()*18)+4;
+  },8000);
+}
+
+/* ── QUOTES TABLE ── */
+const quotesData=[
+  {text:'The only bad workout is the one that didn\'t happen.',author:'TTT Train',pillar:'Train',status:'live'},
+  {text:'Travel is the only thing you can buy that makes you richer.',author:'TTT Travel',pillar:'Travel',status:'live'},
+  {text:'You are always in the middle of becoming.',author:'TTT Transform',pillar:'Transform',status:'live'},
+  {text:'Discipline is the highest form of self-respect.',author:'TTT Train',pillar:'Train',status:'live'},
+  {text:'Every destination plants a seed that home never could.',author:'TTT Travel',pillar:'Travel',status:'live'},
+  {text:'Your mind is the gym you live in permanently.',author:'TTT Transform',pillar:'Transform',status:'live'},
+  {text:'Progress isn\'t always loud.',author:'TTT Train',pillar:'Train',status:'live'},
+  {text:'The world is enormous. Your comfort zone is not.',author:'TTT Travel',pillar:'Travel',status:'live'},
+];
+function buildQuotesTable(){
+  const tb=document.getElementById('quotes-tbody');
+  tb.innerHTML=quotesData.map((q,i)=>`
+    <tr>
+      <td style="max-width:300px;font-style:italic;opacity:.8">"${q.text}"</td>
+      <td><span class="pill-status ${q.pillar==='Train'?'ps-off':q.pillar==='Travel'?'ps-draft':'ps-live'}">${q.pillar}</span></td>
+      <td><span class="pill-status ps-live">${q.status}</span></td>
+      <td><button onclick="removeQuote(${i},this)" style="background:none;border:none;color:var(--red-b);cursor:pointer;font-size:.78rem;letter-spacing:.05em">Remove</button></td>
+    </tr>`).join('');
+  document.getElementById('quote-count').textContent=quotesData.length+' quotes';
+}
+function addQuote(){
+  const txt=document.getElementById('new-quote').value.trim();
+  const auth=document.getElementById('new-author').value.trim()||'— TTT';
+  const pillar=document.getElementById('new-pillar').value;
+  if(!txt)return;
+  quotesData.push({text:txt,author:auth,pillar,status:'live'});
+  buildQuotesTable();
+  document.getElementById('new-quote').value='';
+  document.getElementById('new-author').value='';
+}
+function removeQuote(i,btn){
+  quotesData.splice(i,1);buildQuotesTable();
+}
+
+/* ── STORIES TABLE ── */
+const storiesData=[
+  {name:'Marcus T.',tag:'Train Pillar · 6 months',pillar:'Train',result:'↑ 22kg Strength Gain'},
+  {name:'Leila K.',tag:'Travel Pillar · 3 destinations',pillar:'Travel',result:'→ 3 Solo Trips'},
+  {name:'Jordan R.',tag:'Transform Pillar · 90 days',pillar:'Transform',result:'✦ Full Life Redesign'},
+  {name:'Priya M.',tag:'Train + Transform · 4 months',pillar:'Train',result:'↑ 18kg Total Lost'},
+  {name:'Ethan W.',tag:'Travel Pillar · Morocco',pillar:'Travel',result:'→ 12 Countries'},
+  {name:'Nia S.',tag:'Transform Pillar · Identity Work',pillar:'Transform',result:'✦ Career Shift'},
+];
+function buildStoriesTable(){
+  const tb=document.getElementById('stories-tbody');
+  tb.innerHTML=storiesData.map(s=>`
+    <tr>
+      <td><strong>${s.name}</strong><br><span style="font-size:.72rem;opacity:.5">${s.tag}</span></td>
+      <td><span class="pill-status ${s.pillar==='Train'?'ps-off':s.pillar==='Travel'?'ps-draft':'ps-live'}">${s.pillar}</span></td>
+      <td style="font-size:.78rem;opacity:.7">${s.result}</td>
+      <td><span class="pill-status ps-live">published</span></td>
+    </tr>`).join('');
+  document.getElementById('story-count').textContent=storiesData.length+' stories';
+}
+function addStory(){
+  const name=document.getElementById('s-name').value.trim();
+  const tag=document.getElementById('s-tag').value.trim();
+  const pillar=document.getElementById('s-pillar').value;
+  const text=document.getElementById('s-text').value.trim();
+  const result=document.getElementById('s-result').value.trim();
+  if(!name||!text)return;
+  storiesData.push({name,tag,pillar,result});buildStoriesTable();
+  ['s-name','s-tag','s-text','s-result'].forEach(id=>document.getElementById(id).value='');
+}
+
+/* ── DARK / LIGHT MODE ── */
+let lightMode = false;
+function toggleTheme(){
+  lightMode = !lightMode;
+  document.body.classList.toggle('light-mode', lightMode);
+  const btn = document.getElementById('theme-btn');
+  if(btn) btn.innerHTML = lightMode ? '🌙 Dark' : '☀️ Light';
+  localStorage.setItem('ttt-theme', lightMode ? 'light' : 'dark');
+}
+// restore saved theme
+if(localStorage.getItem('ttt-theme')==='light'){lightMode=true;document.body.classList.add('light-mode');const b=document.getElementById('theme-btn');if(b)b.innerHTML='🌙 Dark';}
+
+/* ── NOTIFICATION PANEL ── */
+const notifData = [
+  {text:'New subscriber: alex.r@gmail.com', time:'2 min ago', unread:true},
+  {text:'Quiz completed — The Transformer', time:'8 min ago', unread:true},
+  {text:'Train section — 4min avg session', time:'15 min ago', unread:true},
+  {text:'New clothing notify-me signup', time:'32 min ago', unread:true},
+  {text:'Newsletter opened — 38% open rate', time:'1 hr ago', unread:false},
+  {text:'Quiz completed — The Explorer', time:'2 hrs ago', unread:false},
+];
+function renderNotifs(){
+  const list = document.getElementById('notif-list');
+  if(!list) return;
+  const unread = notifData.filter(n=>n.unread).length;
+  const badge = document.getElementById('notif-count');
+  if(badge) badge.textContent = unread || '';
+  list.innerHTML = notifData.map(n=>`
+    <div class="notif-item ${n.unread?'unread':''}">
+      ${n.unread?'':'<span style="width:6px;flex-shrink:0"></span>'}
+      <div class="ni-text">${n.text}</div>
+      <div class="ni-time">${n.time}</div>
+    </div>`).join('');
+}
+function toggleNotif(){
+  const p = document.getElementById('notif-panel');
+  if(p) p.classList.toggle('open');
+}
+function clearNotifs(){
+  notifData.forEach(n=>n.unread=false);
+  renderNotifs();
+  const p=document.getElementById('notif-panel');
+  if(p) p.classList.remove('open');
+}
+document.addEventListener('click', e=>{
+  const panel=document.getElementById('notif-panel');
+  const btn=document.getElementById('notif-btn');
+  if(panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){
+    panel.classList.remove('open');
+  }
+});
+
+/* ── SESSION TIMEOUT (30 min) ── */
+let sessionTimer, warnTimer, sessionSecs = 1800;
+function resetSession(){
+  clearTimeout(sessionTimer);clearTimeout(warnTimer);
+  const warn = document.getElementById('session-warn');
+  if(warn) warn.classList.remove('show');
+  // show warning at 2 min remaining
+  warnTimer = setTimeout(()=>{
+    if(!document.getElementById('admin').classList.contains('show')) return;
+    const warn=document.getElementById('session-warn');
+    if(warn) warn.classList.add('show');
+    startWarnCountdown(120);
+  }, (sessionSecs-120)*1000);
+  // auto logout
+  sessionTimer = setTimeout(()=>{
+    document.getElementById('admin').classList.remove('show');
+    document.getElementById('login-screen').classList.remove('gone');
+  }, sessionSecs*1000);
+}
+let warnInterval;
+function startWarnCountdown(secs){
+  clearInterval(warnInterval);
+  let s = secs;
+  function tick(){
+    const el=document.getElementById('sw-countdown');
+    if(el) el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+    if(s--<=0){ clearInterval(warnInterval); }
+  }
+  tick();
+  warnInterval=setInterval(tick,1000);
+}
+function extendSession(){
+  clearInterval(warnInterval);
+  const warn=document.getElementById('session-warn');
+  if(warn) warn.classList.remove('show');
+  resetSession();
+  logAudit('Session extended by owner');
+}
+['click','keydown','scroll'].forEach(ev=>document.addEventListener(ev,resetSession,{passive:true}));
+
+/* ── AUDIT LOG ── */
+const auditLog = [
+  {time:'Today 11:42', action:'Logged into admin dashboard', who:'Owner'},
+  {time:'Today 11:38', action:'Quote added: "Discipline is self-respect"', who:'Owner'},
+  {time:'Today 10:55', action:'Pillar description updated: Transform', who:'Owner'},
+  {time:'Yesterday', action:'Newsletter broadcast scheduled', who:'Owner'},
+  {time:'2 days ago', action:'Clothing launch date set', who:'Owner'},
+];
+function logAudit(action){
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  auditLog.unshift({time:`Today ${timeStr}`, action, who:'Owner'});
+  if(auditLog.length>20) auditLog.pop();
+  renderAuditLog();
+}
+function renderAuditLog(){
+  const el = document.getElementById('audit-log');
+  if(!el) return;
+  el.innerHTML = auditLog.map(a=>`
+    <div class="audit-row">
+      <div class="audit-time">${a.time}</div>
+      <div class="audit-action">${a.action}</div>
+      <div class="audit-who">${a.who}</div>
+    </div>`).join('');
+}
+
+/* ── ADMIN SEARCH ── */
+function adminSearch(q){
+  if(!q.trim()) return;
+  const lq = q.toLowerCase();
+  // highlight matching table rows
+  document.querySelectorAll('.tbl tbody tr').forEach(row=>{
+    const match = row.textContent.toLowerCase().includes(lq);
+    row.style.opacity = match||!q?'1':'.25';
+    row.style.background = match&&q?'rgba(123,79,168,.08)':'';
+  });
+}
+
+/* ── CSV EXPORT ── */
+function exportCSV(){
+  const rows = [['Email','Joined','Source']];
+  document.querySelectorAll('#subs-tbody tr').forEach(row=>{
+    const cells = [...row.querySelectorAll('td')].map(td=>td.textContent.trim());
+    if(cells.length) rows.push(cells);
+  });
+  downloadCSV(rows, 'ttt-subscribers.csv');
+  logAudit('Subscriber list exported to CSV');
+}
+function exportQuizCSV(){
+  const rows = [['Result','Count','Percentage']];
+  rows.push(['The Trainer','38','38%'],['The Explorer','41','41%'],['The Transformer','21','21%']);
+  downloadCSV(rows, 'ttt-quiz-results.csv');
+  logAudit('Quiz results exported to CSV');
+}
+function downloadCSV(rows, filename){
+  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+
+/* ── CHART.JS LINE GRAPH ── */
+function buildLineChart(){
+  const canvas = document.getElementById('traffic-line-chart');
+  if(!canvas||!window.Chart) return;
+  new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets:[
+        {label:'Visitors',data:[1200,1850,1640,2200,1980,2750,3100,2900,3400,3200,2800,3600],
+          borderColor:'rgba(123,79,168,.8)',backgroundColor:'rgba(123,79,168,.06)',
+          tension:.4,fill:true,pointBackgroundColor:'rgba(123,79,168,1)',pointRadius:3},
+        {label:'Subscribers',data:[42,88,76,120,98,155,180,165,210,195,175,230],
+          borderColor:'rgba(192,48,42,.7)',backgroundColor:'rgba(192,48,42,.05)',
+          tension:.4,fill:true,pointBackgroundColor:'rgba(192,48,42,1)',pointRadius:3}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'rgba(214,210,206,.6)',font:{size:11}}},
+        tooltip:{backgroundColor:'rgba(15,13,19,.95)',borderColor:'rgba(255,255,255,.08)',borderWidth:1}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(214,210,206,.4)',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(214,210,206,.4)',font:{size:10}}}
+      }
+    }
+  });
+}
+
+/* ── SUBS TABLE ── */
+const subsData=[
+  {email:'alex.r@gmail.com',joined:'Today, 11:42 AM',source:'Hero CTA'},
+  {email:'mia.thompson@outlook.com',joined:'Today, 10:18 AM',source:'Newsletter'},
+  {email:'j.okafor@proton.me',joined:'Yesterday',source:'Quiz'},
+  {email:'sara.k@icloud.com',joined:'Yesterday',source:'Hero CTA'},
+  {email:'d.mehta88@gmail.com',joined:'2 days ago',source:'Footer'},
+  {email:'lucas.w@yahoo.com',joined:'2 days ago',source:'Quiz'},
+  {email:'priya.n@gmail.com',joined:'3 days ago',source:'Social'},
+  {email:'ethan.j@hotmail.com',joined:'3 days ago',source:'Newsletter'},
+  {email:'chloe.b@gmail.com',joined:'4 days ago',source:'Hero CTA'},
+  {email:'omar.f@proton.me',joined:'4 days ago',source:'Referral'},
+];
+function buildSubsTable(){
+  document.getElementById('subs-tbody').innerHTML=subsData.map(s=>`
+    <tr>
+      <td>${s.email}</td>
+      <td style="font-size:.75rem;opacity:.6">${s.joined}</td>
+      <td><span class="pill-status ps-draft">${s.source}</span></td>
+    </tr>`).join('');
+}
+</script>
+</body>
+</html>
